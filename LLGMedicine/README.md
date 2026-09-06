@@ -97,10 +97,22 @@ drops everything TerjeMedicine set on it.
 
 ## Building
 
-Pack the `LLGMedicine` folder into a PBO with the prefix `LLGMedicine`, sign it
-with your server key, and ship it as `@LLGMedicine` with `LLGMedicine.pbo` in
-`addons/` and your `.bikey` in `keys/`.
+```
+python3 LLGMedicine/Tools/pack_pbo.py
+```
 
-Load order: after `@TerjeCore` and `@TerjeMedicine`. The `requiredAddons` list
-in `config.cpp` enforces this, so the config will refuse to load in the wrong
-order rather than half-applying.
+Writes `build/@LLGMedicine/addons/LLGMedicine.pbo`. Copy that `@LLGMedicine`
+folder next to your other mods and add it to the launch parameters.
+
+`config.cpp` ships as plain text rather than binarised `config.bin`. DayZ parses
+a raw config out of a PBO without complaint — the mod this one replaces shipped
+exactly that way — so no Windows-only Addon Builder is in the loop.
+
+The PBO is **not signed**. That is fine for a local client test and for a server
+running `verifySignatures = 0`, but a server with signature checking on will
+reject it. To sign, run `DSSignFile.exe` from the BI Tools against the PBO with
+your `.biprivatekey`, and put the matching `.bikey` in `@LLGMedicine/keys/`.
+
+Load order: after `@TerjeCore` and `@TerjeMedicine`. The `requiredAddons` list in
+`config.cpp` enforces this, so the config will refuse to load in the wrong order
+rather than half-applying.
