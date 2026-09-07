@@ -7,14 +7,18 @@ you get it wrong.
 
 ```
 IBUPROFEN 400 MG · ORAL CAPSULE
-TAKE 1 CAPSULE BY MOUTH FOR PAIN AND CHEST INFECTION.
-CAUTION: Take with food. May irritate the stomach.
+TAKE 1 CAPSULE BY MOUTH FOR PAIN AND COLD/PNEUMONIA.
+PAIN L1 for 10 min · COLD/PNEUMONIA L2 for 5 min
+OVERDOSE 0.35 (Moderate Risk). Take with food. May irritate the stomach.
+LOT 3699P · EXP 2030-04-06
 ```
 
 ```
-ZIVIROL Z-ANTIDOTE 10 ML · SINGLE-USE AUTO-INJECTOR · RX ONLY
-PRESS FIRMLY AGAINST THE OUTER THIGH IMMEDIATELY AFTER Z-VIRUS INFECTION.
-DANGER: Costs blood and health. One dose only.
+REANIMATAL 200 MG · SINGLE-USE AUTO-INJECTOR · RX ONLY
+PRESS FIRMLY AGAINST THE OUTER THIGH TO REVIVE A COLLAPSING CASUALTY.
+PAIN L3 for 4 min · HEALTH REGEN for 3 min · SHOCK -75
+OVERDOSE 1.5 (Severe Risk). Buys minutes only, and takes a heavy toll to do it.
+LOT 8365K · EXP 2029-05-12
 ```
 
 92 items are labelled: every pill, ampoule, auto-injector, ointment and energy
@@ -30,24 +34,75 @@ upstream balance patch takes effect without this mod fighting it.
 
 ## Label format
 
-Three lines, always in the same order:
+Five lines, always in the same order:
 
 | Line | Content | Colour |
 |------|---------|--------|
 | 1 | Drug name, strength, dose form, and `RX ONLY` or `CONTROLLED POISON` where it applies | light grey |
 | 2 | Directions: `TAKE 1 TABLET BY MOUTH FOR …`, `DRAW WITH A STERILE SYRINGE AND INJECT …` | default |
-| 3 | `NOTE:` / `CAUTION:` / `WARNING:` / `DANGER:` and one short warning | grey, amber or red by severity |
+| 3 | Strength and duration per effect: `PAIN L1 for 10 min · COLD/PNEUMONIA L2 for 5 min` | grey |
+| 4 | Overdose value, risk word, and one short warning | grey, amber or red by severity |
+| 5 | Lot code and expiry: `LOT 3699P · EXP 2030-04-06` | grey |
 
-Warning severity tracks the item's `overdosedIncrement` in TerjeMedicine:
-grey below 0.2, amber to 1.0, red above it. Poisons and the things that only
+Line 3 lists each effect separately rather than collapsing them into one
+`Strength:` / `Duration:` pair, because plenty of items do two things at once
+and a single pair cannot say which number belongs to which effect.
+
+Effects are named after the conditions the
+[Medicine wiki](https://github.com/TerjeBruoygard/TerjeMods/tree/master/WIKI/en/Medicine#-medicines)
+uses — `COLD/PNEUMONIA`, `FOOD POISONING`, `CHEMICAL POISONING`, `SEPSIS`,
+`RABIES`, `ZOMBIE VIRUS`, `MENTAL HEALTH`, `BLEEDING RATE`, `BLOOD REGEN`,
+`CONCUSSION`, `HEMATOMA`, `RADIATION`, `PAIN` — so a label maps straight onto
+the illness the mod models rather than onto a drug class. The drug name on
+line 1 is the item's own in-game name, so the bottle matches the item.
+
+Six items carry no `med*` values in `CfgVehicles` (the first aid kits, surgical
+tools, the alcohol ampoule, purification tablets and the antirad injector).
+Their line 3 says where the numbers actually live instead of inventing any.
+
+Warning severity tracks the printed `overdosedIncrement`: grey below 0.2,
+amber to 1.0, red above it. Poisons and the things that only
 look like medicine (Iversan, Novichek, arsenic, cyanide, belladonna,
 strychnine, coniine, injectable alcohol) are red and say plainly that they are
 not medicine.
 
-Deliberately absent: exact numbers. Durations, levels and overdose values are
-not printed on the label because TerjeMedicine already renders them live from
-the config, and a hand-typed copy goes stale the moment upstream rebalances
-anything.
+## Expiry dates
+
+Every item carries a lot code and an expiry, printed as plain text in the
+description like the rest of the label. Dates run **2026 to 2031**. Nothing is pinned to a theme year.
+
+The verb follows the dose form the way a real shelf does: `EXP` on medication,
+`BEST BY` on the energy drinks, `STERILE UNTIL` on sealed kits and instruments.
+Shelf life is ordered realistically too — biologics in glass ampoules go off
+first, sealed tablets last longest. Lot codes are unique per item and stable.
+
+If your server's year sits elsewhere, move the whole window in one command:
+
+```
+python3 LLGMedicine/Tools/restamp_dates.py --shift -38    # 1988-1993
+python3 LLGMedicine/Tools/restamp_dates.py --base 2040    # 2040-2045
+python3 LLGMedicine/Tools/restamp_dates.py --show         # list, change nothing
+```
+
+It rewrites only the four-digit years. Months, lot codes, wording and the
+spread between items all survive, so hand edits to label text are safe. Re-pack
+afterwards.
+
+## Where the numbers come from
+
+Strength, duration and overdose are read out of TerjeMedicine's own configs
+and written into the labels, rather than typed by hand. That matters: the
+override this replaces had seven items whose printed numbers disagreed with
+the config it was overriding — Reanimatal claimed painkiller L1 / overdose
+1.85 against a real L3 / 1.5, and Amitriptyline, Ketamin, Strychnine, Konyin
+and the cyanide and arsenic pills were all wrong too. Chelating Tablets were
+described as treating chemical poisoning when their `medAntipoisonLevel` makes
+them a food-poisoning treatment, which is where the wiki lists them too.
+
+Because the numbers are generated, they are correct as of the TerjeMedicine
+version in this repo. After an upstream rebalance they are stale in exactly
+the way hand-typed ones would be — the difference is that regenerating is
+mechanical rather than 92 manual edits.
 
 ## Interaction with the medicine recognition perks
 
@@ -75,10 +130,10 @@ The text you read there is the text the game shows, so rewording one is a
 straight edit of that string:
 
 ```cpp
-class TerjePillsAnalgin: TerjePillsBase
+class TerjePillsNoopept: TerjePillsBase
 {
     llgPharmacyLabel=1;
-    descriptionShort="<color rgba='222,226,230,255'>ANALGIN (METAMIZOLE) 500 MG · ORAL TABLET</color><br/>TAKE 1 TABLET BY MOUTH FOR MILD TO MODERATE PAIN.<br/><color rgba='150,155,160,255'>NOTE: Short acting. Wears off quickly under stress.</color>";
+    descriptionShort="<color rgba='222,226,230,255'>NOOPEPT 10 MG · ORAL TABLET · RX ONLY</color><br/>TAKE 1 TABLET BY MOUTH FOR HEADACHE AND CONCUSSION.<br/><color rgba='150,155,160,255'>PAINKILLER L1 for 6 min 20 sec · CONCUSSION RELIEF for 6 min 20 sec</color><br/><color rgba='240,173,78,255'>OVERDOSE 0.35 (Moderate Risk). May cause irritability and disturbed sleep.</color><br/><color rgba='150,155,160,255'>LOT 4463B · EXP 2028-07-06</color>";
 };
 ```
 
