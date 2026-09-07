@@ -180,6 +180,21 @@ running `verifySignatures = 0`, but a server with signature checking on will
 reject it. To sign, run `DSSignFile.exe` from the BI Tools against the PBO with
 your `.biprivatekey`, and put the matching `.bikey` in `@LLGMedicine/keys/`.
 
+## CfgMods
+
+Modelled on the [DayZ sample mod](https://github.com/Jacob-Mango/DayZ-SampleMod/blob/master/MyPrefix/MyMod/Scripts/config.cpp),
+which is the structure Bohemia's modding docs point at.
+
+No icon ships with this mod, so `picture = ""` is paired with
+`hidePicture = 1`. Setting `hidePicture = 0` without a `picture` asks the game
+to draw an icon that does not exist — TerjeMedicine gets away with
+`hidePicture = 0` because it ships `TerjeMedicine/Textures/mod_icon.edds`.
+`Tools/check_config.py` fails the build if those two disagree.
+
+`dependencies[] = {"Game", "World", "Mission"}` matches the sample mod. The
+Terje mods additionally list `"Core"`; both forms are in use and this mod only
+adds scripts to `4_World`.
+
 ## Dependencies
 
 `config.cpp` declares the whole TerjeMedicine chain in `requiredAddons`, so the
