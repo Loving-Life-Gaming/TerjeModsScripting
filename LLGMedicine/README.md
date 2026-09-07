@@ -182,18 +182,27 @@ your `.biprivatekey`, and put the matching `.bikey` in `@LLGMedicine/keys/`.
 
 ## CfgMods
 
-Modelled on the [DayZ sample mod](https://github.com/Jacob-Mango/DayZ-SampleMod/blob/master/MyPrefix/MyMod/Scripts/config.cpp),
-which is the structure Bohemia's modding docs point at.
+Matches Terje's own modding template, `Wiki/examples/TerjeModding/config.cpp`,
+which is the reference for a mod that sits on top of TerjeMedicine:
+`dependencies[] = {"Core","Game","World","Mission"}` and one script module per
+folder that actually holds scripts.
 
-No icon ships with this mod, so `picture = ""` is paired with
-`hidePicture = 1`. Setting `hidePicture = 0` without a `picture` asks the game
-to draw an icon that does not exist — TerjeMedicine gets away with
-`hidePicture = 0` because it ships `TerjeMedicine/Textures/mod_icon.edds`.
-`Tools/check_config.py` fails the build if those two disagree.
+No icon ships with this mod, so `picture = ""` is paired with `hidePicture = 1`
+the way Bohemia's sample mod does it. Terje's template leaves `hidePicture = 0`
+with no picture and the engine accepts that too; it is cosmetic either way.
 
-`dependencies[] = {"Game", "World", "Mission"}` matches the sample mod. The
-Terje mods additionally list `"Core"`; both forms are in use and this mod only
-adds scripts to `4_World`.
+## Client and server
+
+Terje's modding guide, step 6: pack to a PBO and put it in a **client-side mod
+(`-mod=`), not server-side (`-serverMod=`)**. A `-mod=` entry is loaded by the
+server *and* pushed to every client; a `-serverMod=` entry never reaches the
+client, and this mod's whole job is client-side text.
+
+Because this build carries a script (`Scripts/4_World/LLGMedicineLabels.c`),
+**the server and every client must run the identical PBO**. The 1988 override
+this replaces had no scripts, so an old copy on the server and a new copy on a
+client used to "work". It does not any more: DayZ compares script modules on
+connect, and a client whose scripts differ from the server's is refused.
 
 ## Dependencies
 

@@ -43,13 +43,15 @@ class CfgMods
 		version = "2.0.0";
 		type = "mod";
 		extra = 0;
-		// No icon ships with this mod, so say so. Asking the game to draw a mod
-		// picture that does not exist is what the DayZ sample mod avoids by
-		// pairing picture="" with hidePicture=1.
+		// No icon ships with this mod. Bohemia's sample mod pairs picture=""
+		// with hidePicture=1 for that case; Terje's own template leaves
+		// hidePicture=0 with no picture and the engine tolerates either.
 		picture = "";
 		hideName = 0;
 		hidePicture = 1;
-		dependencies[] = {"Game", "World", "Mission"};
+		// Matches Terje's modding template (Wiki/examples/TerjeModding), which
+		// is the reference for a mod that sits on top of TerjeMedicine.
+		dependencies[] = {"Core", "Game", "World", "Mission"};
 
 		class defs
 		{

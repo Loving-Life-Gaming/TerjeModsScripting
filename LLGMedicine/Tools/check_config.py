@@ -16,8 +16,7 @@ The rules it enforces:
   class Name { }           definition with no base.
 
 It also checks brace balance, that every property line ends in a semicolon,
-that no string contains a double quote (config strings cannot escape one), and
-that CfgMods does not ask the game to draw a mod picture the PBO never ships.
+and that no string contains a double quote (config strings cannot escape one).
 """
 
 import os
@@ -98,31 +97,7 @@ def check(path):
     if depth != 0:
         errors.append((len(lines), "file ends with %d unclosed brace(s)" % depth))
 
-    errors.extend(check_mod_picture(lines))
     return errors
-
-
-def check_mod_picture(lines):
-    """hidePicture=0 tells the game to render a mod icon. If no picture is
-    declared there is nothing to render. The DayZ sample mod pairs
-    picture="" with hidePicture=1; TerjeMedicine pairs a real .edds with
-    hidePicture=0. Either is fine, one without the other is not."""
-    picture = None
-    hide = None
-    line_no = 0
-    for number, raw in enumerate(lines, 1):
-        line = strip_comment(raw)
-        found = re.match(r'\s*picture\s*=\s*"(.*)"\s*;', line)
-        if found:
-            picture = found.group(1)
-        found = re.match(r"\s*hidePicture\s*=\s*(\d+)\s*;", line)
-        if found:
-            hide, line_no = int(found.group(1)), number
-    if hide == 0 and not picture:
-        return [(line_no, "hidePicture=0 asks the game to draw a mod icon, but "
-                          "no non-empty `picture` is declared; either ship one "
-                          "or set picture=\"\" with hidePicture=1")]
-    return []
 
 
 if __name__ == "__main__":
