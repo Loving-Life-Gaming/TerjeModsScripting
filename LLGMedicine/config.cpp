@@ -43,8 +43,12 @@ class CfgMods
 		version = "2.0.0";
 		type = "mod";
 		extra = 0;
+		// No icon ships with this mod, so say so. Asking the game to draw a mod
+		// picture that does not exist is what the DayZ sample mod avoids by
+		// pairing picture="" with hidePicture=1.
+		picture = "";
 		hideName = 0;
-		hidePicture = 0;
+		hidePicture = 1;
 		dependencies[] = {"Game", "World", "Mission"};
 
 		class defs
