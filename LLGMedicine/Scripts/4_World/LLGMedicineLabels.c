@@ -24,8 +24,9 @@ modded class ItemBase
 			return super.DescriptionOverride(output);
 		}
 
-		// The label itself. Stays a stringtable token: the tooltip widget
-		// resolves "#STR_..." inline, so it localises like any other text.
+		// The label itself, read straight off the class in config.cpp. It is
+		// rich text: <br/> line breaks and <color> spans, the same markup
+		// TerjeCore uses when it builds the effects block below.
 		string label = ConfigGetString("descriptionShort");
 
 		// Ask TerjeCore for the effects block. It returns false, and leaves

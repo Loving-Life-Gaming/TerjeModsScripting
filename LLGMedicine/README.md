@@ -70,29 +70,27 @@ panel without touching the perk gate:
 
 ## Editing labels
 
-All label text is in `stringtable.csv`, one row per item. To reword a label,
-edit the `original` and `english` columns of its row; nothing in `config.cpp`
-needs to change. The other language columns are empty and fall back to
-`original`, so a translator can fill in a column without touching anything else.
+Every label is written out in full on the class it belongs to, in `config.cpp`.
+The text you read there is the text the game shows, so rewording one is a
+straight edit of that string:
+
+```cpp
+class TerjePillsAnalgin: TerjePillsBase
+{
+    llgPharmacyLabel=1;
+    descriptionShort="<color rgba='222,226,230,255'>ANALGIN (METAMIZOLE) 500 MG · ORAL TABLET</color><br/>TAKE 1 TABLET BY MOUTH FOR MILD TO MODERATE PAIN.<br/><color rgba='150,155,160,255'>NOTE: Short acting. Wears off quickly under stress.</color>";
+};
+```
 
 Markup allowed in a label: `<br/>` for a line break and
 `<color rgba='r,g,b,a'>…</color>` for colour. The palette in use is
 `222,226,230` header, `150,155,160` note, `240,173,78` caution, `217,83,79`
-danger.
+danger. Config strings cannot span lines or contain a double quote, so each
+label is one long line and colour attributes use single quotes.
 
-To label an item that is not covered yet, add a row to `stringtable.csv` and a
-block to `config.cpp`:
-
-```cpp
-class TerjePillsSomething: TerjePillsBase
-{
-    llgPharmacyLabel=1;
-    descriptionShort="#STR_LLGMED_PILL_SOMETHING_DESC";
-};
-```
-
-The parent in that declaration must be the same parent the class has in
-TerjeMedicine. Declaring a different one re-parents the class and silently
+To label an item that is not covered yet, copy a block and change the class
+name. The parent in the declaration must be the same parent the class has in
+TerjeMedicine — declaring a different one re-parents the class and silently
 drops everything TerjeMedicine set on it.
 
 ## Building
