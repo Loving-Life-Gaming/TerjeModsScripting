@@ -144,15 +144,29 @@ danger. Config strings cannot span lines or contain a double quote, so each
 label is one long line and colour attributes use single quotes.
 
 To label an item that is not covered yet, copy a block and change the class
-name. The parent in the declaration must be the same parent the class has in
-TerjeMedicine — declaring a different one re-parents the class and silently
-drops everything TerjeMedicine set on it.
+name. Two rules:
+
+- The parent in a **definition** must be the same parent the class has in
+  TerjeMedicine. Declaring a different one re-parents the class and silently
+  drops everything TerjeMedicine set on it.
+- A **forward declaration** at the top of `CfgVehicles` must be bare —
+  `class TerjePillsBase;`, never `class TerjePillsBase: Edible_Base;`. The
+  second form is a syntax error and stops the game from loading.
+
+`Tools/check_config.py` enforces both.
 
 ## Building
 
 ```
-python3 LLGMedicine/Tools/pack_pbo.py
+python3 LLGMedicine/Tools/check_config.py    # parse config.cpp, report line numbers
+python3 LLGMedicine/Tools/pack_pbo.py        # runs the check, then packs
 ```
+
+`pack_pbo.py` refuses to pack a config that fails the check. A config syntax
+error is otherwise invisible until the game shows a popup on start, which is
+how `class TerjePillsBase: Edible_Base;` shipped once — a forward declaration
+cannot carry a base class, and the parser reports it as
+`';' encountered instead of '{'`.
 
 Writes `build/@LLGMedicine/addons/LLGMedicine.pbo`. Copy that `@LLGMedicine`
 folder next to your other mods and add it to the launch parameters.

@@ -84,4 +84,13 @@ def pack(source, prefix, output):
 
 
 if __name__ == "__main__":
+    # A config syntax error only shows up as a popup on game start, so refuse
+    # to pack one. check_config.py explains what it found.
+    import check_config
+    problems = check_config.check(os.path.join(SOURCE, "config.cpp"))
+    if problems:
+        for number, message in problems:
+            print("config.cpp:%d: %s" % (number, message))
+        sys.exit("\nconfig.cpp has %d problem(s); not packing" % len(problems))
+
     pack(SOURCE, PREFIX, OUTPUT)

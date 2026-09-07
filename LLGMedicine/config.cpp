@@ -61,17 +61,18 @@ class CfgMods
 class CfgVehicles
 {
 	// Upstream classes are forward declared so the overrides below merge into
-	// them. Declaring a different parent here would re-parent the class and
-	// silently drop everything TerjeMedicine set on it.
+	// them. A forward declaration must NOT carry a base class: "class X: Y;"
+	// is a syntax error in DayZ configs ("';' encountered instead of '{'").
+	// The real parent comes from TerjeMedicine, which loads first.
 	class Inventory_Base;
 	class Container_Base;
 	class Edible_Base;
 	class SodaCan_ColorBase;
-	class TerjePillsBase: Edible_Base;
-	class TerjeAmpouleBase: Inventory_Base;
-	class TerjeInjectorBase: Inventory_Base;
-	class TerjeSalveBase: Inventory_Base;
-	class TerjeEnergyDrink: SodaCan_ColorBase;
+	class TerjePillsBase;
+	class TerjeAmpouleBase;
+	class TerjeInjectorBase;
+	class TerjeSalveBase;
+	class TerjeEnergyDrink;
 
 	// Each override sets llgPharmacyLabel=1, which routes that item's tooltip
 	// through the label renderer in Scripts/4_World/LLGMedicineLabels.c.
