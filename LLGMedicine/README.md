@@ -32,6 +32,9 @@ flag, and nothing else. Painkiller levels, timers, overdose increments, models,
 textures and inventory sizes all stay where TerjeMedicine puts them, so an
 upstream balance patch takes effect without this mod fighting it.
 
+That only works because the PBO ships a **binarised** `config.bin`. See
+*Building* for why that is not optional.
+
 ## Label format
 
 Five lines, always in the same order:
@@ -106,22 +109,18 @@ mechanical rather than 92 manual edits.
 
 ## Interaction with the medicine recognition perks
 
-TerjeCore builds a dynamic effects panel for medical items and, when a player
-can read it, substitutes that panel **for** `descriptionShort` rather than
-adding to it — see `TerjeCore/Scripts/4_World/Entities/ItemBase.c` and
-`TerjeMedicine/Scripts/4_World/Entities/ItemBase.c`. A plain
-`descriptionShort` override therefore disappears as soon as a player trains
-Pill / Ampoule / Injector Recognition, and never appears at all on a server
-that leaves those perks unregistered.
+TerjeCore builds a dynamic effects block for medical items and, when the
+Pill / Ampoule / Injector Recognition perks say the player can read it,
+substitutes that block **for** `descriptionShort` — see
+`TerjeCore/Scripts/4_World/Entities/ItemBase.c` and
+`TerjeMedicine/Scripts/4_World/Entities/ItemBase.c`. Pill Recognition needs
+skill level 1, so for most players a pill's `descriptionShort` is never shown.
 
-`Scripts/4_World/LLGMedicineLabels.c` puts the label back in front of that
-panel without touching the perk gate:
-
-| Player | Sees |
-|--------|------|
-| No recognition perk (perk registered) | label only |
-| Recognition perk trained | label, then the effects panel |
-| Perks not registered on the server | label, then the effects panel |
+`Scripts/4_World/LLGMedicineLabels.c` returns the label for any item flagged
+`llgPharmacyLabel=1` and stops there. It deliberately never calls down into
+the effects path: the strength, duration and overdose numbers that path would
+print are already on the label, and building that block over one of these
+items is where a pills-only crash on click lived.
 
 ## Editing labels
 
@@ -159,26 +158,32 @@ name. Two rules:
 
 ```
 python3 LLGMedicine/Tools/check_config.py    # parse config.cpp, report line numbers
-python3 LLGMedicine/Tools/pack_pbo.py        # runs the check, then packs
+python3 LLGMedicine/Tools/pack_pbo.py        # check, binarise, pack
 ```
 
-`pack_pbo.py` refuses to pack a config that fails the check. A config syntax
-error is otherwise invisible until the game shows a popup on start, which is
-how `class TerjePillsBase: Edible_Base;` shipped once — a forward declaration
-cannot carry a base class, and the parser reports it as
-`';' encountered instead of '{'`.
+Writes `build/@LLGMedicine/addons/LLGMedicine.pbo` containing `config.bin` and
+the script. `config.cpp` is the source you edit; it is binarised on the way
+into the PBO by `Tools/rap.py` and never ships as text.
 
-Writes `build/@LLGMedicine/addons/LLGMedicine.pbo`. Copy that `@LLGMedicine`
-folder next to your other mods and add it to the launch parameters.
+**Binarising is not cosmetic.** This engine treats a class re-opened from a
+raw `config.cpp` as a *replacement* for the earlier definition, not a merge.
+A two-line `descriptionShort` override in a raw config strips the item of its
+model (crash when it is instantiated) or of its whole ancestry (item silently
+removed from inventory). A binarised config merges, which is how
+TerjeMedicine's own re-opening of vanilla items works. The 1988 override this
+mod replaces shipped a raw config and survived only by restating every
+property of every class — that was not duplication, it was the only way a
+raw config can work, and this README was wrong to call it a bug.
 
-`config.cpp` ships as plain text rather than binarised `config.bin`. DayZ parses
-a raw config out of a PBO without complaint — the mod this one replaces shipped
-exactly that way — so no Windows-only Addon Builder is in the loop.
+`rap.py` was verified two ways: it reproduces a working binarised override
+byte-for-byte from its parsed tree, and its output for this mod's
+`config.cpp` is byte-identical to what Bohemia's own tool produced from the
+same file.
 
-The PBO is **not signed**. That is fine for a local client test and for a server
-running `verifySignatures = 0`, but a server with signature checking on will
-reject it. To sign, run `DSSignFile.exe` from the BI Tools against the PBO with
-your `.biprivatekey`, and put the matching `.bikey` in `@LLGMedicine/keys/`.
+The PBO is **not signed**. That is fine for a local test and for a server
+running `verifySignatures = 0`; a server with signature checking on will
+reject it. Sign with `DSSignFile.exe` against your `.biprivatekey` and put the
+matching `.bikey` in `@LLGMedicine/keys/`.
 
 ## CfgMods
 

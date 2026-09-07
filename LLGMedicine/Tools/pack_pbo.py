@@ -5,10 +5,14 @@
 
 Writes build/@LLGMedicine/addons/LLGMedicine.pbo next to the repository root.
 
-The PBO keeps config.cpp as plain text rather than binarising it to config.bin.
-DayZ parses a raw config.cpp out of a PBO fine - the mod this one replaces
-shipped exactly that way - so no Windows-only Addon Builder is needed. Nothing
-here signs the PBO; that needs a .biprivatekey and DSSignFile.
+config.cpp is binarised to config.bin on the way in (see rap.py). That is
+not cosmetic: this engine treats a class re-opened from a RAW config.cpp as a
+replacement for the earlier definition, so a two-line descriptionShort
+override strips the item of its model or its ancestry. A binarised config
+merges, which is how TerjeMedicine's own overrides of vanilla items work.
+config.cpp stays the source you edit; only config.bin ships.
+
+Nothing here signs the PBO; that needs a .biprivatekey and DSSignFile.
 """
 
 import hashlib
@@ -16,6 +20,9 @@ import os
 import struct
 import sys
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import rap
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SOURCE = os.path.join(REPO, "LLGMedicine")
@@ -59,7 +66,16 @@ def pack(source, prefix, output):
         sys.exit("no files found under " + source)
 
     timestamp = int(time.time())
-    blobs = [open(absolute, "rb").read() for _, absolute in files]
+    blobs = []
+    names = []
+    for (name, absolute) in files:
+        data = open(absolute, "rb").read()
+        if name.lower() == "config.cpp":
+            data = rap.write(rap.parse_cpp(data.decode("utf-8")))
+            name = "config.bin"
+        names.append(name)
+        blobs.append(data)
+    files = [(n, a) for n, (_, a) in zip(names, files)]
 
     header = cstring("") + struct.pack("<5I", VERSION_MIME, 0, 0, 0, 0)
     header += cstring("product") + cstring("dayz ugc")
