@@ -14,13 +14,6 @@
 // with llgPharmacyLabel=1, without touching the perk gate itself: an untrained
 // player still gets the label only, a trained player gets the label plus the
 // effects they have earned the right to read.
-//
-// Load order matters. @LLGMedicine must come AFTER @Terje-Core and
-// @Terje-Medicine in the launch parameters. Script modules are compiled in
-// -mod= order, so loading this first puts it on the wrong side of TerjeCore's
-// own ItemBase and the label ends up fighting the effects block instead of
-// sitting in front of it. requiredAddons cannot fix that - it orders configs,
-// not scripts.
 
 modded class ItemBase
 {
@@ -37,15 +30,13 @@ modded class ItemBase
 			return super.DescriptionOverride(output);
 		}
 
-		// Ask whoever is further down the chain for the effects block. On the
-		// intended load order that is TerjeCore, and it returns false without
-		// touching `effects` whenever the player may not read it.
+		// Ask TerjeCore for the effects block. It returns false, and leaves
+		// `effects` untouched, whenever the player may not read it.
 		string effects = "";
 		bool hasEffects = super.DescriptionOverride(effects);
 
 		// If the chain handed back the label itself - TerjeCore does that when
-		// its override type is 2, and it will if load order puts it outside
-		// this class - use it as-is rather than printing the label twice.
+		// its override type is 2 - use it as-is rather than printing it twice.
 		if (hasEffects && effects != "" && effects.IndexOf(label) != 0)
 		{
 			output = label + "<br/>" + effects;
