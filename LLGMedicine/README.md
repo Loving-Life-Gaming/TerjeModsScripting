@@ -180,6 +180,23 @@ running `verifySignatures = 0`, but a server with signature checking on will
 reject it. To sign, run `DSSignFile.exe` from the BI Tools against the PBO with
 your `.biprivatekey`, and put the matching `.bikey` in `@LLGMedicine/keys/`.
 
-Load order: after `@TerjeCore` and `@TerjeMedicine`. The `requiredAddons` list in
-`config.cpp` enforces this, so the config will refuse to load in the wrong order
-rather than half-applying.
+## Load order
+
+`@LLGMedicine` must come **after** `@Terje-Core` and `@Terje-Medicine` in the
+`-mod=` list. Not just in the launcher's display order — in the actual
+parameter string:
+
+```
+-mod=...;@Terje-Core;@Terje-Skills;@Terje-Radiation;@Terje-Medicine;@LLGMedicine
+```
+
+The `requiredAddons` list in `config.cpp` orders **configs**, not **scripts**.
+Script modules are compiled in `-mod=` order, so loading this mod before
+TerjeCore puts `LLGMedicineLabels.c` on the wrong side of TerjeCore's own
+`ItemBase` and the label competes with the effects block instead of sitting in
+front of it. It also means the classes this config re-opens may not exist yet
+when it is parsed.
+
+The folder must contain only this mod's PBO. If an older medicine override is
+still sitting in the same `addons/` folder, both will define the same classes
+and fight each other.
